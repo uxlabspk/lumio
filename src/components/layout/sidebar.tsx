@@ -19,10 +19,12 @@ import {
     Zap,
     ChevronLeft,
     ChevronRight,
+    LogOut,
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import React, { useState } from "react";
+import { signOut } from "next-auth/react";
 
 const mainNav = [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -164,7 +166,7 @@ export function Sidebar({ user }: SidebarProps) {
                 </Link>
 
                 {/* User */}
-                <div className="mt-2 flex items-center gap-3 rounded-lg px-2.5 py-2">
+                <div className="mt-2 flex items-center gap-2 rounded-lg px-2.5 py-2">
                     <Avatar className="h-7 w-7 shrink-0">
                         {user?.avatar && <AvatarImage src={user.avatar} />}
                         <AvatarFallback className="text-[10px]">
@@ -181,6 +183,13 @@ export function Sidebar({ user }: SidebarProps) {
                             </p>
                         </div>
                     )}
+                    <button
+                        onClick={() => signOut({ callbackUrl: "/login" })}
+                        title="Sign out"
+                        className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                    >
+                        <LogOut className="h-3.5 w-3.5" />
+                    </button>
                 </div>
             </div>
         </aside>
