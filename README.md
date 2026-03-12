@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is Lumio, a school management system built with Next.js, NextAuth, Prisma, and PostgreSQL.
 
 ## Getting Started
 
@@ -16,9 +16,34 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Password Reset Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Lumio now includes a forgot-password flow at `/forgot-password` and `/reset-password`.
+
+1. Apply the Prisma schema change:
+
+```bash
+npm run db:push
+```
+
+2. Make sure your auth app URL is configured:
+
+```bash
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret
+```
+
+3. Optional: configure SMTP to email reset links in production:
+
+```bash
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-user
+SMTP_PASS=your-password
+EMAIL_FROM="Lumio <no-reply@example.com>"
+```
+
+If SMTP is not configured, reset links are logged to the server console in development and surfaced in the forgot-password response for easier local testing.
 
 ## Learn More
 

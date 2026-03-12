@@ -136,6 +136,7 @@ model User {
   parent        Parent?
   staff         Staff?
   sessions      UserSession[]
+  passwordResetTokens PasswordResetToken[]
   notifications Notification[]
   sentMessages  Message[]      @relation("SentMessages")
   auditLogs     AuditLog[]
@@ -150,6 +151,20 @@ model UserSession {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 // ========================
