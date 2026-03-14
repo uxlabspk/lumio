@@ -12,6 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { resolveDashboardRole, type DashboardRole } from "@/lib/roles";
 
 const stats = [
     {
@@ -90,7 +93,32 @@ const statusConfig = {
     LATE: { label: "Late", variant: "warning" as const },
 };
 
-export default function DashboardPage() {
+const quickActionsByRole: Record<DashboardRole, Array<{ label: string; href: string; icon: typeof ClipboardCheck; color: string }>> = {
+    ADMIN: [
+        { label: "Take Attendance", href: "/dashboard/attendance", icon: ClipboardCheck, color: "text-emerald-500 bg-emerald-50" },
+        { label: "Add Assignment", href: "/dashboard/assignments", icon: BookOpen, color: "text-blue-500 bg-blue-50" },
+        { label: "Schedule Exam", href: "/dashboard/exams", icon: GraduationCap, color: "text-purple-500 bg-purple-50" },
+        { label: "Announcement", href: "/dashboard/news", icon: Bell, color: "text-orange-500 bg-orange-50" },
+    ],
+    TEACHER: [
+        { label: "Take Attendance", href: "/dashboard/attendance", icon: ClipboardCheck, color: "text-emerald-500 bg-emerald-50" },
+        { label: "Add Assignment", href: "/dashboard/assignments", icon: BookOpen, color: "text-blue-500 bg-blue-50" },
+        { label: "Schedule Exam", href: "/dashboard/exams", icon: GraduationCap, color: "text-purple-500 bg-purple-50" },
+        { label: "Class Prep", href: "/dashboard/class-prep", icon: BookOpen, color: "text-indigo-500 bg-indigo-50" },
+    ],
+    STUDENT: [
+        { label: "My Assignments", href: "/dashboard/assignments", icon: BookOpen, color: "text-blue-500 bg-blue-50" },
+        { label: "Exam Schedule", href: "/dashboard/exams", icon: GraduationCap, color: "text-purple-500 bg-purple-50" },
+        { label: "My Attendance", href: "/dashboard/attendance", icon: ClipboardCheck, color: "text-emerald-500 bg-emerald-50" },
+        { label: "School News", href: "/dashboard/news", icon: Bell, color: "text-orange-500 bg-orange-50" },
+    ],
+};
+
+export default async function DashboardPage() {
+    const session = await getServerSession(authOptions);
+    const dashboardRole = resolveDashboardRole(session?.user?.role);
+    const quickActions = quickActionsByRole[dashboardRole];
+
     return (
         <div className="space-y-6">
             {/* Page title */}
@@ -201,12 +229,7 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-2 gap-2">
-                            {[
-                                { label: "Take Attendance", href: "/dashboard/attendance", icon: ClipboardCheck, color: "text-emerald-500 bg-emerald-50" },
-                                { label: "Add Assignment", href: "/dashboard/assignments", icon: BookOpen, color: "text-blue-500 bg-blue-50" },
-                                { label: "Schedule Exam", href: "/dashboard/exams", icon: GraduationCap, color: "text-purple-500 bg-purple-50" },
-                                { label: "Announcement", href: "/dashboard/news", icon: Bell, color: "text-orange-500 bg-orange-50" },
-                            ].map((action) => {
+                            {quickActions.map((action) => {
                                 const Icon = action.icon;
                                 return (
                                     <a

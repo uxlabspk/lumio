@@ -25,24 +25,25 @@ import { cn, getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import React, { useState } from "react";
 import { signOut } from "next-auth/react";
+import { resolveDashboardRole, type DashboardRole } from "@/lib/roles";
 
 const mainNav = [
-    { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Class Preparation", href: "/dashboard/class-prep", icon: BookOpen },
-    { label: "Attendance", href: "/dashboard/attendance", icon: ClipboardCheck },
-    { label: "Exams", href: "/dashboard/exams", icon: GraduationCap },
-    { label: "Assignments", href: "/dashboard/assignments", icon: FileText },
-    { label: "Schedule", href: "/dashboard/schedule", icon: Calendar },
-    { label: "Students", href: "/dashboard/students", icon: Users },
-    { label: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-    { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-    { label: "Reports", href: "/dashboard/reports", icon: PieChart },
+    { label: "Overview", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
+    { label: "Class Preparation", href: "/dashboard/class-prep", icon: BookOpen, roles: ["ADMIN", "TEACHER"] as DashboardRole[] },
+    { label: "Attendance", href: "/dashboard/attendance", icon: ClipboardCheck, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
+    { label: "Exams", href: "/dashboard/exams", icon: GraduationCap, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
+    { label: "Assignments", href: "/dashboard/assignments", icon: FileText, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
+    { label: "Schedule", href: "/dashboard/schedule", icon: Calendar, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
+    { label: "Students", href: "/dashboard/students", icon: Users, roles: ["ADMIN", "TEACHER"] as DashboardRole[] },
+    { label: "Messages", href: "/dashboard/messages", icon: MessageSquare, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
+    { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3, roles: ["ADMIN", "TEACHER"] as DashboardRole[] },
+    { label: "Reports", href: "/dashboard/reports", icon: PieChart, roles: ["ADMIN", "TEACHER"] as DashboardRole[] },
 ];
 
 const secondaryNav = [
-    { label: "School News", href: "/dashboard/news", icon: Newspaper },
-    { label: "School Activities", href: "/dashboard/activities", icon: Activity },
-    { label: "Whats New", href: "/dashboard/whats-new", icon: Zap },
+    { label: "School News", href: "/dashboard/news", icon: Newspaper, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
+    { label: "School Activities", href: "/dashboard/activities", icon: Activity, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
+    { label: "Whats New", href: "/dashboard/whats-new", icon: Zap, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
 ];
 
 interface SidebarProps {
@@ -56,6 +57,10 @@ interface SidebarProps {
 export function Sidebar({ user }: SidebarProps) {
     const pathname = usePathname();
     const [collapsed, setCollapsed] = useState(false);
+    const dashboardRole = resolveDashboardRole(user?.role);
+
+    const visibleMainNav = mainNav.filter((item) => item.roles.includes(dashboardRole));
+    const visibleSecondaryNav = secondaryNav.filter((item) => item.roles.includes(dashboardRole));
 
     return (
         <aside
@@ -94,7 +99,7 @@ export function Sidebar({ user }: SidebarProps) {
                     </p>
                 )}
                 <nav className="flex flex-col gap-0.5 px-2">
-                    {mainNav.map((item) => {
+                    {visibleMainNav.map((item) => {
                         const Icon = item.icon;
                         const isActive =
                             item.href === "/dashboard"
@@ -127,7 +132,7 @@ export function Sidebar({ user }: SidebarProps) {
                         </p>
                     )}
                     <nav className="flex flex-col gap-0.5 px-2">
-                        {secondaryNav.map((item) => {
+                        {visibleSecondaryNav.map((item) => {
                             const Icon = item.icon;
                             const isActive = pathname.startsWith(item.href);
                             return (
