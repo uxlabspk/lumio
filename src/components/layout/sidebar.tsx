@@ -20,6 +20,11 @@ import {
     ChevronLeft,
     ChevronRight,
     LogOut,
+    UserPlus,
+    School,
+    UserCheck,
+    Award,
+    BookOpenCheck,
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,15 +34,33 @@ import { resolveDashboardRole, type DashboardRole } from "@/lib/roles";
 
 const mainNav = [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
-    { label: "Class Preparation", href: "/dashboard/class-prep", icon: BookOpen, roles: ["ADMIN", "TEACHER"] as DashboardRole[] },
-    { label: "Attendance", href: "/dashboard/attendance", icon: ClipboardCheck, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
-    { label: "Exams", href: "/dashboard/exams", icon: GraduationCap, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
-    { label: "Assignments", href: "/dashboard/assignments", icon: FileText, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
+
+    // Admin-specific: Enrollment, Class & Teacher Management
+    { label: "Enrollment", href: "/dashboard/enrollment", icon: UserPlus, roles: ["ADMIN"] as DashboardRole[] },
+    { label: "Classes", href: "/dashboard/classes", icon: School, roles: ["ADMIN"] as DashboardRole[] },
+    { label: "Teachers", href: "/dashboard/teachers", icon: UserCheck, roles: ["ADMIN"] as DashboardRole[] },
+
+    // Teacher: Student & Grade Management
+    { label: "Students", href: "/dashboard/students", icon: Users, roles: ["TEACHER"] as DashboardRole[] },
+    { label: "Grades", href: "/dashboard/grades", icon: Award, roles: ["TEACHER"] as DashboardRole[] },
+    { label: "Class Preparation", href: "/dashboard/class-prep", icon: BookOpen, roles: ["TEACHER"] as DashboardRole[] },
+    { label: "Assignments", href: "/dashboard/assignments", icon: FileText, roles: ["TEACHER"] as DashboardRole[] },
+    { label: "Exams", href: "/dashboard/exams", icon: GraduationCap, roles: ["TEACHER"] as DashboardRole[] },
+    { label: "Attendance", href: "/dashboard/attendance", icon: ClipboardCheck, roles: ["TEACHER"] as DashboardRole[] },
+    { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3, roles: ["TEACHER"] as DashboardRole[] },
+    { label: "Reports", href: "/dashboard/reports", icon: PieChart, roles: ["TEACHER"] as DashboardRole[] },
+
+    // Student: View-only Access
+    { label: "My Classes", href: "/dashboard/my-classes", icon: BookOpenCheck, roles: ["STUDENT"] as DashboardRole[] },
+    { label: "My Grades", href: "/dashboard/my-grades", icon: Award, roles: ["STUDENT"] as DashboardRole[] },
+    { label: "My Enrollment", href: "/dashboard/my-enrollment", icon: UserPlus, roles: ["STUDENT"] as DashboardRole[] },
+    { label: "My Assignments", href: "/dashboard/my-assignments", icon: FileText, roles: ["STUDENT"] as DashboardRole[] },
+    { label: "My Exams", href: "/dashboard/my-exams", icon: GraduationCap, roles: ["STUDENT"] as DashboardRole[] },
+    { label: "My Attendance", href: "/dashboard/my-attendance", icon: ClipboardCheck, roles: ["STUDENT"] as DashboardRole[] },
+
+    // Common
     { label: "Schedule", href: "/dashboard/schedule", icon: Calendar, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
-    { label: "Students", href: "/dashboard/students", icon: Users, roles: ["ADMIN", "TEACHER"] as DashboardRole[] },
     { label: "Messages", href: "/dashboard/messages", icon: MessageSquare, roles: ["ADMIN", "TEACHER", "STUDENT"] as DashboardRole[] },
-    { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3, roles: ["ADMIN", "TEACHER"] as DashboardRole[] },
-    { label: "Reports", href: "/dashboard/reports", icon: PieChart, roles: ["ADMIN", "TEACHER"] as DashboardRole[] },
 ];
 
 const secondaryNav = [
