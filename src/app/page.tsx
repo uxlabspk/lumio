@@ -486,8 +486,8 @@ function Pricing() {
             <div
               key={p.name}
               className={`rounded-2xl p-7 border ${p.highlighted
-                  ? "bg-zinc-900 border-zinc-900 shadow-xl scale-[1.03]"
-                  : "bg-white border-zinc-100 shadow-sm"
+                ? "bg-zinc-900 border-zinc-900 shadow-xl scale-[1.03]"
+                : "bg-white border-zinc-100 shadow-sm"
                 }`}
             >
               <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${p.highlighted ? "text-zinc-400" : "text-zinc-500"}`}>
@@ -520,8 +520,8 @@ function Pricing() {
               <Link
                 href="/login"
                 className={`block w-full rounded-xl py-2.5 text-center text-sm font-semibold transition-colors ${p.highlighted
-                    ? "bg-white text-zinc-900 hover:bg-zinc-100"
-                    : "bg-zinc-900 text-white hover:bg-zinc-700"
+                  ? "bg-white text-zinc-900 hover:bg-zinc-100"
+                  : "bg-zinc-900 text-white hover:bg-zinc-700"
                   }`}
               >
                 {p.cta}
