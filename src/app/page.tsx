@@ -167,9 +167,9 @@ function Navbar() {
 
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-7 text-sm text-zinc-600">
-          <a href="#features" className="hover:text-zinc-900 transition-colors">Features</a>
-          <a href="#testimonials" className="hover:text-zinc-900 transition-colors">Testimonials</a>
-          <a href="#pricing" className="hover:text-zinc-900 transition-colors">Pricing</a>
+          <Link href="/features" className="hover:text-zinc-900 transition-colors">Features</Link>
+          <Link href="/testimonials" className="hover:text-zinc-900 transition-colors">Testimonials</Link>
+          <Link href="/pricing" className="hover:text-zinc-900 transition-colors">Pricing</Link>
         </nav>
 
         {/* CTAs */}
