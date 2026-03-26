@@ -1,77 +1,76 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, RefreshCw, UserPlus } from "lucide-react";
+import { Search, RefreshCw, UserPlus, Eye, Edit, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 
-type DashboardRole = "ADMIN" | "TEACHER";
+interface StudentUser {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string | null;
+}
 
-interface EnrollmentClass {
+interface StudentClass {
     id: string;
     name: string;
     section: string | null;
-    _count: { students: number };
 }
 
-interface EnrollmentStudent {
+interface StudentData {
     id: string;
     studentId: string;
     status: string;
-    user: { name: string; email: string };
-    class: { id: string; name: string; section: string | null } | null;
-}
-
-interface EnrollmentResponse {
-    role: DashboardRole;
-    canManage: boolean;
-    classes: EnrollmentClass[];
-    students: EnrollmentStudent[];
+    enrollmentDate?: string | null;
+    user: StudentUser;
+    class: StudentClass | null;
 }
 
 export default function StudentsPage() {
+    const router = useRouter();
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
-    const [data, setData] = useState<EnrollmentResponse | null>(null);
+    const [data, setData] = useState<{ students: StudentData[]; classes: StudentClass[]; canManage: boolean } | null>(null);
     const [selectedStudentId, setSelectedStudentId] = useState("");
     const [selectedClassId, setSelectedClassId] = useState("");
 
-    async function loadEnrollmentData() {
+    async function loadStudents() {
         setLoading(true);
         setError("");
 
         try {
-            const res = await fetch("/api/dashboard/enrollment", { cache: "no-store" });
-            const payload = (await res.json()) as EnrollmentResponse | { error?: string };
+            const res = await fetch("/api/dashboard/students", { cache: "no-store" });
+            const payload = await res.json();
 
             if (!res.ok) {
-                throw new Error((payload as { error?: string }).error || "Failed to load enrollment data.");
+                throw new Error(payload.error || "Failed to load students.");
             }
 
-            const response = payload as EnrollmentResponse;
-            setData(response);
+            setData(payload);
 
-            if (!selectedStudentId && response.students.length > 0) {
-                setSelectedStudentId(response.students[0].id);
+            if (!selectedStudentId && payload.students.length > 0) {
+                setSelectedStudentId(payload.students[0].id);
             }
 
-            if (!selectedClassId && response.classes.length > 0) {
-                setSelectedClassId(response.classes[0].id);
+            if (!selectedClassId && payload.classes.length > 0) {
+                setSelectedClassId(payload.classes[0].id);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to load enrollment data.");
+            setError(err instanceof Error ? err.message : "Failed to load students.");
         } finally {
             setLoading(false);
         }
     }
 
     useEffect(() => {
-        loadEnrollmentData();
+        loadStudents();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -96,20 +95,20 @@ export default function StudentsPage() {
         setMessage("");
 
         try {
-            const res = await fetch("/api/dashboard/enrollment", {
+            const res = await fetch("/api/dashboard/students/enroll", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ studentId, classId }),
             });
 
-            const payload = (await res.json()) as { message?: string; error?: string };
+            const payload = await res.json();
 
             if (!res.ok) {
                 throw new Error(payload.error || "Failed to enroll student.");
             }
 
             setMessage(payload.message || "Student enrolled.");
-            await loadEnrollmentData();
+            await loadStudents();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to enroll student.");
         } finally {
@@ -123,15 +122,21 @@ export default function StudentsPage() {
                 <div>
                     <h1 className="text-xl font-semibold text-zinc-900">Students</h1>
                     <p className="text-sm text-zinc-500">
-                        {data?.canManage
-                            ? "Enroll students into classes and keep rosters updated."
-                            : "View students in your classes."}
+                        Manage student records, enrollment, and profiles.
                     </p>
                 </div>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={loadEnrollmentData}>
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    Refresh
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={loadStudents}>
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        Refresh
+                    </Button>
+                    {data?.canManage && (
+                        <Button variant="default" size="sm" className="gap-1.5 text-xs" onClick={() => router.push("/dashboard/students/add")}>
+                            <UserPlus className="h-3.5 w-3.5" />
+                            Add Student
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {message ? (
@@ -161,9 +166,9 @@ export default function StudentsPage() {
                 </Card>
                 <Card>
                     <CardContent className="p-4">
-                        <p className="text-xs text-zinc-500">Mode</p>
+                        <p className="text-xs text-zinc-500">Access Mode</p>
                         <p className="mt-1 text-lg font-semibold text-zinc-900">
-                            {data?.canManage ? "Admin Enrollment" : "Teacher View"}
+                            {data?.canManage ? "Full Management" : "View Only"}
                         </p>
                     </CardContent>
                 </Card>
@@ -174,7 +179,7 @@ export default function StudentsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <UserPlus className="h-4 w-4" />
-                            Enroll Student In Class
+                            Quick Enrollment
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-3 md:grid-cols-3">
@@ -198,7 +203,7 @@ export default function StudentsPage() {
                             {data.classes.map((classroom) => (
                                 <option key={classroom.id} value={classroom.id}>
                                     {classroom.name}
-                                    {classroom.section ? ` ${classroom.section}` : ""} ({classroom._count.students} students)
+                                    {classroom.section ? ` ${classroom.section}` : ""}
                                 </option>
                             ))}
                         </select>
@@ -235,9 +240,16 @@ export default function StudentsPage() {
                             {filteredStudents.map((student) => (
                                 <div key={student.id} className="grid grid-cols-1 gap-3 rounded-lg border border-zinc-100 p-3 md:grid-cols-5 md:items-center">
                                     <div className="md:col-span-2">
-                                        <p className="text-sm font-medium text-zinc-900">{student.user.name}</p>
-                                        <p className="text-xs text-zinc-500">{student.user.email}</p>
-                                        <p className="mt-0.5 text-[10px] text-zinc-400">{student.studentId}</p>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700">
+                                                {student.user.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-zinc-900">{student.user.name}</p>
+                                                <p className="text-xs text-zinc-500">{student.user.email}</p>
+                                            </div>
+                                        </div>
+                                        <p className="mt-1 text-[10px] text-zinc-400">ID: {student.studentId}</p>
                                     </div>
 
                                     <div className="text-xs text-zinc-600">
@@ -252,32 +264,35 @@ export default function StudentsPage() {
                                         </Badge>
                                     </div>
 
-                                    {data?.canManage ? (
-                                        <div className="flex items-center gap-2">
-                                            <select
-                                                defaultValue={student.class?.id ?? ""}
-                                                className="h-8 flex-1 rounded-lg border border-zinc-200 bg-white px-2 text-xs text-zinc-900"
-                                                onChange={(e) => {
-                                                    const targetClassId = e.target.value;
-                                                    if (targetClassId && targetClassId !== student.class?.id) {
-                                                        enrollStudent(student.id, targetClassId);
-                                                    }
-                                                }}
-                                            >
-                                                <option value="" disabled>
-                                                    Select class
-                                                </option>
-                                                {data.classes.map((classroom) => (
-                                                    <option key={classroom.id} value={classroom.id}>
-                                                        {classroom.name}
-                                                        {classroom.section ? ` ${classroom.section}` : ""}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    ) : (
-                                        <span className="text-xs text-zinc-400">Read only</span>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 px-2"
+                                            onClick={() => router.push(`/dashboard/students/${student.id}`)}
+                                        >
+                                            <Eye className="h-3.5 w-3.5" />
+                                        </Button>
+                                        {data?.canManage && (
+                                            <>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 px-2"
+                                                    onClick={() => router.push(`/dashboard/students/${student.id}/edit`)}
+                                                >
+                                                    <Edit className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 px-2 text-red-600 hover:text-red-700"
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
 
