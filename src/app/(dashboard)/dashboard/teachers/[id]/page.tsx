@@ -205,11 +205,10 @@ export default function TeacherDetailPage() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-1.5 pb-3 text-sm font-medium border-b-2 transition-colors ${
-                                activeTab === tab.id
+                            className={`flex items-center gap-1.5 pb-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
                                     ? "border-blue-500 text-blue-600"
                                     : "border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300"
-                            }`}
+                                }`}
                         >
                             {tab.icon}
                             {tab.label}

@@ -57,7 +57,7 @@ export default function TeachersPage() {
             setLoading(true);
             const res = await fetch("/api/dashboard/teachers");
             const data = await res.json();
-            
+
             if (res.ok) {
                 setTeachers(data.teachers);
                 setClasses(data.classes);
@@ -126,8 +126,8 @@ export default function TeachersPage() {
                         Refresh
                     </Button>
                     {canManage && (
-                        <Button 
-                            size="sm" 
+                        <Button
+                            size="sm"
                             className="gap-1.5 text-xs"
                             onClick={() => router.push("/dashboard/teachers/add")}
                         >
@@ -179,7 +179,7 @@ export default function TeachersPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3 md:grid-cols-3">
-                    <select 
+                    <select
                         className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
                         value={selectedTeacherId}
                         onChange={(e) => setSelectedTeacherId(e.target.value)}
@@ -192,7 +192,7 @@ export default function TeachersPage() {
                         ))}
                     </select>
 
-                    <select 
+                    <select
                         className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
                         value={selectedClassId}
                         onChange={(e) => setSelectedClassId(e.target.value)}
@@ -264,9 +264,9 @@ export default function TeachersPage() {
                                     </div>
 
                                     <div className="flex gap-2">
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
                                             className="gap-1 text-xs"
                                             onClick={() => router.push(`/dashboard/teachers/${teacher.id}`)}
                                         >
