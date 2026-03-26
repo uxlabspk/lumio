@@ -1,63 +1,116 @@
 "use client";
 
-import { useState } from "react";
-import { UserCheck, Search, RefreshCw, UserPlus, BookOpen } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { UserCheck, Search, RefreshCw, UserPlus, BookOpen, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
+interface Teacher {
+    id: string;
+    employeeId: string;
+    department: string | null;
+    qualification: string | null;
+    specialization: string | null;
+    user: {
+        id: string;
+        name: string;
+        email: string;
+        phone: string | null;
+    };
+    classTeacher: Array<{
+        id: string;
+        name: string;
+        section: string | null;
+    }>;
+}
+
+interface ClassItem {
+    id: string;
+    name: string;
+    section: string | null;
+    grade: {
+        name: string;
+        level: number;
+    };
+}
+
 export default function TeachersPage() {
+    const router = useRouter();
     const [search, setSearch] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [teachers, setTeachers] = useState<Teacher[]>([]);
+    const [classes, setClasses] = useState<ClassItem[]>([]);
+    const [canManage, setCanManage] = useState(false);
+    const [assigning, setAssigning] = useState(false);
+    const [selectedTeacherId, setSelectedTeacherId] = useState("");
+    const [selectedClassId, setSelectedClassId] = useState("");
 
-    // Mock data - replace with actual API call
-    const teachers = [
-        {
-            id: "1",
-            name: "Dr. John Smith",
-            email: "john.smith@school.edu",
-            subject: "Mathematics",
-            classes: ["Math 101 A", "Math 102 B"],
-            students: 55,
-        },
-        {
-            id: "2",
-            name: "Prof. Sarah Johnson",
-            email: "sarah.j@school.edu",
-            subject: "Physics",
-            classes: ["Physics 201 B"],
-            students: 28,
-        },
-        {
-            id: "3",
-            name: "Dr. Michael Williams",
-            email: "m.williams@school.edu",
-            subject: "Chemistry",
-            classes: ["Chem 101 A", "Chem 201 C"],
-            students: 45,
-        },
-        {
-            id: "4",
-            name: "Ms. Emily Brown",
-            email: "emily.b@school.edu",
-            subject: "English Literature",
-            classes: ["English 301 C"],
-            students: 32,
-        },
-    ];
+    useEffect(() => {
+        loadTeachers();
+    }, []);
 
-    const classes = [
-        { id: "1", name: "Mathematics 101", section: "A" },
-        { id: "2", name: "Physics 201", section: "B" },
-        { id: "3", name: "Chemistry 101", section: "A" },
-        { id: "4", name: "English Literature", section: "C" },
-    ];
+    async function loadTeachers() {
+        try {
+            setLoading(true);
+            const res = await fetch("/api/dashboard/teachers");
+            const data = await res.json();
+            
+            if (res.ok) {
+                setTeachers(data.teachers);
+                setClasses(data.classes);
+                setCanManage(data.canManage);
+            }
+        } catch (error) {
+            console.error("Failed to load teachers:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleAssignTeacher() {
+        if (!selectedTeacherId || !selectedClassId) {
+            alert("Please select both teacher and class");
+            return;
+        }
+
+        try {
+            setAssigning(true);
+            const res = await fetch("/api/dashboard/teachers/assign", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    teacherId: selectedTeacherId,
+                    classId: selectedClassId,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert(data.message);
+                setSelectedTeacherId("");
+                setSelectedClassId("");
+                loadTeachers(); // Reload to get updated data
+            } else {
+                alert(data.error || "Failed to assign teacher");
+            }
+        } catch (error) {
+            console.error("Failed to assign teacher:", error);
+            alert("Failed to assign teacher");
+        } finally {
+            setAssigning(false);
+        }
+    }
 
     const filteredTeachers = teachers.filter(
         (teacher) =>
-            teacher.name.toLowerCase().includes(search.toLowerCase()) ||
-            teacher.email.toLowerCase().includes(search.toLowerCase()) ||
-            teacher.subject.toLowerCase().includes(search.toLowerCase())
+            teacher.user.name.toLowerCase().includes(search.toLowerCase()) ||
+            teacher.user.email.toLowerCase().includes(search.toLowerCase()) ||
+            (teacher.department && teacher.department.toLowerCase().includes(search.toLowerCase())) ||
+            (teacher.specialization && teacher.specialization.toLowerCase().includes(search.toLowerCase()))
     );
 
     return (
@@ -68,14 +121,20 @@ export default function TeachersPage() {
                     <p className="text-sm text-zinc-500">Manage teachers and assign them to classes.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={loadTeachers}>
                         <RefreshCw className="h-3.5 w-3.5" />
                         Refresh
                     </Button>
-                    <Button size="sm" className="gap-1.5 text-xs">
-                        <UserPlus className="h-3.5 w-3.5" />
-                        Add Teacher
-                    </Button>
+                    {canManage && (
+                        <Button 
+                            size="sm" 
+                            className="gap-1.5 text-xs"
+                            onClick={() => router.push("/dashboard/teachers/add")}
+                        >
+                            <UserPlus className="h-3.5 w-3.5" />
+                            Add Teacher
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -88,25 +147,25 @@ export default function TeachersPage() {
                 </Card>
                 <Card>
                     <CardContent className="p-4">
-                        <p className="text-xs text-zinc-500">Total Classes</p>
+                        <p className="text-xs text-zinc-500">Total Classes Assigned</p>
                         <p className="mt-1 text-2xl font-semibold text-zinc-900">
-                            {teachers.reduce((acc, t) => acc + t.classes.length, 0)}
+                            {teachers.reduce((acc, t) => acc + t.classTeacher.length, 0)}
                         </p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent className="p-4">
-                        <p className="text-xs text-zinc-500">Total Students</p>
+                        <p className="text-xs text-zinc-500">Departments</p>
                         <p className="mt-1 text-2xl font-semibold text-zinc-900">
-                            {teachers.reduce((acc, t) => acc + t.students, 0)}
+                            {new Set(teachers.map(t => t.department).filter(Boolean)).size}
                         </p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent className="p-4">
-                        <p className="text-xs text-zinc-500">Avg Students/Teacher</p>
+                        <p className="text-xs text-zinc-500">Avg Classes/Teacher</p>
                         <p className="mt-1 text-2xl font-semibold text-zinc-900">
-                            {Math.round(teachers.reduce((acc, t) => acc + t.students, 0) / teachers.length)}
+                            {teachers.length > 0 ? Math.round(teachers.reduce((acc, t) => acc + t.classTeacher.length, 0) / teachers.length) : 0}
                         </p>
                     </CardContent>
                 </Card>
@@ -120,27 +179,36 @@ export default function TeachersPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3 md:grid-cols-3">
-                    <select className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900">
+                    <select 
+                        className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+                        value={selectedTeacherId}
+                        onChange={(e) => setSelectedTeacherId(e.target.value)}
+                    >
                         <option value="">Select teacher...</option>
                         {teachers.map((teacher) => (
                             <option key={teacher.id} value={teacher.id}>
-                                {teacher.name} - {teacher.subject}
+                                {teacher.user.name} - {teacher.department || "No Department"}
                             </option>
                         ))}
                     </select>
 
-                    <select className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900">
+                    <select 
+                        className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+                        value={selectedClassId}
+                        onChange={(e) => setSelectedClassId(e.target.value)}
+                    >
                         <option value="">Select class...</option>
                         {classes.map((classItem) => (
                             <option key={classItem.id} value={classItem.id}>
-                                {classItem.name} {classItem.section}
+                                {classItem.grade.name} - {classItem.name} {classItem.section || ""}
                             </option>
                         ))}
                     </select>
 
-                    <Button className="gap-1.5">
+                    <Button className="gap-1.5" onClick={handleAssignTeacher} disabled={assigning}>
+                        {assigning && <Loader2 className="h-4 w-4 animate-spin" />}
                         <UserCheck className="h-4 w-4" />
-                        Assign
+                        {assigning ? "Assigning..." : "Assign"}
                     </Button>
                 </CardContent>
             </Card>
@@ -159,38 +227,56 @@ export default function TeachersPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-3">
-                        {filteredTeachers.map((teacher) => (
-                            <div
-                                key={teacher.id}
-                                className="grid grid-cols-1 gap-3 rounded-lg border border-zinc-100 p-4 md:grid-cols-5 md:items-center"
-                            >
-                                <div className="md:col-span-2">
-                                    <p className="text-sm font-medium text-zinc-900">{teacher.name}</p>
-                                    <p className="text-xs text-zinc-500">{teacher.email}</p>
-                                </div>
-
-                                <div>
-                                    <Badge variant="outline">{teacher.subject}</Badge>
-                                </div>
-
-                                <div>
-                                    <p className="text-xs text-zinc-500">Classes: {teacher.classes.length}</p>
-                                    <p className="text-xs text-zinc-500">Students: {teacher.students}</p>
-                                </div>
-
-                                <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" className="gap-1 text-xs">
-                                        <BookOpen className="h-3 w-3" />
-                                        View Classes
-                                    </Button>
-                                    <Button variant="outline" size="sm" className="text-xs">
-                                        Edit
-                                    </Button>
-                                </div>
+                        {loading ? (
+                            <div className="py-6 text-center">
+                                <Loader2 className="h-6 w-6 animate-spin mx-auto text-zinc-400" />
+                                <p className="mt-2 text-sm text-zinc-500">Loading teachers...</p>
                             </div>
-                        ))}
+                        ) : filteredTeachers.length > 0 ? (
+                            filteredTeachers.map((teacher) => (
+                                <div
+                                    key={teacher.id}
+                                    className="grid grid-cols-1 gap-3 rounded-lg border border-zinc-100 p-4 md:grid-cols-5 md:items-center"
+                                >
+                                    <div className="md:col-span-2">
+                                        <p className="text-sm font-medium text-zinc-900">{teacher.user.name}</p>
+                                        <p className="text-xs text-zinc-500">{teacher.user.email}</p>
+                                        {teacher.employeeId && (
+                                            <p className="text-xs text-zinc-400">ID: {teacher.employeeId}</p>
+                                        )}
+                                    </div>
 
-                        {filteredTeachers.length === 0 && (
+                                    <div>
+                                        {teacher.department ? (
+                                            <Badge variant="outline">{teacher.department}</Badge>
+                                        ) : (
+                                            <Badge variant="outline" className="bg-zinc-100">No Dept</Badge>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <p className="text-xs text-zinc-500">Classes: {teacher.classTeacher.length}</p>
+                                        {teacher.specialization && (
+                                            <p className="text-xs text-zinc-400 truncate max-w-[150px]">
+                                                {teacher.specialization}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="gap-1 text-xs"
+                                            onClick={() => router.push(`/dashboard/teachers/${teacher.id}`)}
+                                        >
+                                            <BookOpen className="h-3 w-3" />
+                                            View Profile
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
                             <p className="py-6 text-center text-sm text-zinc-500">No teachers found.</p>
                         )}
                     </div>
