@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Core\View;
 use App\Http\Middleware\AuthMiddleware;
+use App\Services\SchoolManagementData;
 
 final class DashboardController
 {
@@ -15,7 +16,9 @@ final class DashboardController
 
         View::render('pages.dashboard', [
             'title' => 'Dashboard',
-            'modules' => config('modules'),
+            'dashboard' => SchoolManagementData::dashboard(),
+            'navigation' => SchoolManagementData::navigation(),
+            'modules' => SchoolManagementData::modules(),
             'user' => $_SESSION['user'],
         ], 'layouts/app');
     }
