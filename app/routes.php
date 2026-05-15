@@ -38,6 +38,26 @@ $router->get('/health', [ManagementController::class, 'health']);
 $router->get('/reports', [ManagementController::class, 'reports']);
 $router->get('/school-setup', [ManagementController::class, 'schoolSetup']);
 
+foreach ([
+    'students',
+    'admissions',
+    'attendance',
+    'classes',
+    'timetable',
+    'exams',
+    'fees',
+    'communications',
+    'staff',
+    'transport',
+    'library',
+    'health',
+    'reports',
+    'school-setup',
+] as $moduleRoute) {
+    $router->post("/{$moduleRoute}/save", fn () => (new ManagementController())->save($moduleRoute));
+    $router->post("/{$moduleRoute}/delete", fn () => (new ManagementController())->delete($moduleRoute));
+}
+
 $router->post('/api/auth/forgot-password', [ApiAuthController::class, 'forgotPassword']);
 $router->get('/api/auth/reset-password', [ApiAuthController::class, 'validateResetToken']);
 $router->post('/api/auth/reset-password', [ApiAuthController::class, 'resetPassword']);

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Core\View;
 use App\Http\Middleware\AuthMiddleware;
+use App\Repositories\ModuleRecordRepository;
 use App\Services\SchoolManagementData;
 
 final class ManagementController
@@ -85,13 +86,61 @@ final class ManagementController
         AuthMiddleware::requireLogin();
 
         $module = SchoolManagementData::module($key);
+        $repo = new ModuleRecordRepository();
+        $editRecord = null;
+
+        if (isset($_GET['edit'])) {
+            $editRecord = $repo->find($key, (int) $_GET['edit']);
+        }
 
         View::render('management.module', [
             'title' => $module['title'],
             'moduleKey' => $key,
             'module' => $module,
+            'records' => $repo->all($key),
+            'editRecord' => $editRecord,
+            'flash' => $_SESSION['flash'] ?? null,
             'navigation' => SchoolManagementData::navigation(),
             'user' => $_SESSION['user'],
         ], 'layouts/app');
+
+        unset($_SESSION['flash']);
+    }
+
+    public function save(string $key): void
+    {
+        AuthMiddleware::requireLogin();
+
+        $module = SchoolManagementData::module($key);
+        $data = [];
+
+        foreach ($module['columns'] as $column) {
+            $data[$column] = trim($_POST['fields'][$column] ?? '');
+        }
+
+        (new ModuleRecordRepository())->save($key, $data, isset($_POST['id']) && $_POST['id'] !== '' ? (int) $_POST['id'] : null);
+
+        $_SESSION['flash'] = [
+            'type' => 'success',
+            'message' => isset($_POST['id']) && $_POST['id'] !== '' ? 'Record updated successfully.' : 'Record created successfully.',
+        ];
+
+        redirect($key);
+    }
+
+    public function delete(string $key): void
+    {
+        AuthMiddleware::requireLogin();
+
+        if (isset($_POST['id'])) {
+            (new ModuleRecordRepository())->delete($key, (int) $_POST['id']);
+        }
+
+        $_SESSION['flash'] = [
+            'type' => 'success',
+            'message' => 'Record deleted successfully.',
+        ];
+
+        redirect($key);
     }
 }
