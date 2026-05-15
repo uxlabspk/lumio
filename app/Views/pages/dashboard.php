@@ -2,15 +2,13 @@
     <section class="overflow-hidden rounded-lg border border-zinc-200 bg-white">
         <div class="grid gap-0 lg:grid-cols-[1.25fr_0.75fr]">
             <div class="p-6">
-                <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Operations overview</p>
-                <h1 class="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">Run the school from one place</h1>
-                <p class="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-500">
-                    A practical command center for Pakistani schools: attendance, student records, fees, messages, exams, transport, and compliance gaps are visible without digging.
-                </p>
+                <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700"><?= e($dashboard['hero']['eyebrow']) ?></p>
+                <h1 class="mt-2 text-2xl font-bold tracking-tight sm:text-3xl"><?= e($dashboard['hero']['title']) ?></h1>
+                <p class="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-500"><?= e($dashboard['hero']['description']) ?></p>
                 <div class="mt-5 flex flex-wrap gap-2">
-                    <a href="<?= url('attendance') ?>" class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700">Mark attendance</a>
-                    <a href="<?= url('fees') ?>" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Record payment</a>
-                    <a href="<?= url('communications') ?>" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Send notice</a>
+                    <?php foreach ($dashboard['hero']['actions'] as $action): ?>
+                        <a href="<?= url($action['path']) ?>" class="rounded-lg px-4 py-2 text-sm font-medium <?= $action['primary'] ? 'bg-zinc-900 text-white hover:bg-zinc-700' : 'border border-zinc-200 text-zinc-700 hover:bg-zinc-50' ?>"><?= e($action['label']) ?></a>
+                    <?php endforeach; ?>
                 </div>
             </div>
             <div class="border-t border-zinc-200 bg-zinc-50 p-6 lg:border-l lg:border-t-0">

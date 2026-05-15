@@ -13,8 +13,12 @@
                 <p class="mt-3 max-w-3xl text-sm leading-relaxed text-zinc-500"><?= e($module['description']) ?></p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="#record-form" class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"><?= e($module['primaryAction']) ?></a>
-                <a href="<?= url($moduleKey) ?>" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Clear form</a>
+                <?php if ($canManage): ?>
+                    <a href="#record-form" class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"><?= e($module['primaryAction']) ?></a>
+                    <a href="<?= url($moduleKey) ?>" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Clear form</a>
+                <?php else: ?>
+                    <span class="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-medium text-zinc-500">Read-only access</span>
+                <?php endif; ?>
             </div>
         </div>
     </section>
@@ -47,7 +51,9 @@
                             <?php foreach ($module['columns'] as $column): ?>
                                 <th class="whitespace-nowrap px-5 py-3 font-semibold"><?= e($column) ?></th>
                             <?php endforeach; ?>
-                            <th class="whitespace-nowrap px-5 py-3 font-semibold">Action</th>
+                            <?php if ($canManage): ?>
+                                <th class="whitespace-nowrap px-5 py-3 font-semibold">Action</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-zinc-100 bg-white">
@@ -56,20 +62,22 @@
                                 <?php foreach ($module['columns'] as $index => $column): ?>
                                     <td class="whitespace-nowrap px-5 py-4 <?= $index === 0 ? 'font-medium text-zinc-900' : 'text-zinc-600' ?>"><?= e($record['data'][$column] ?? '') ?></td>
                                 <?php endforeach; ?>
-                                <td class="whitespace-nowrap px-5 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <a class="text-sm font-medium text-zinc-900 hover:underline" href="<?= url($moduleKey) ?>?edit=<?= (int) $record['id'] ?>#record-form">Edit</a>
-                                        <form method="POST" action="<?= url($moduleKey . '/delete') ?>" onsubmit="return confirm('Delete this record?');">
-                                            <input type="hidden" name="id" value="<?= (int) $record['id'] ?>">
-                                            <button class="text-sm font-medium text-red-600 hover:underline" type="submit">Delete</button>
-                                        </form>
-                                    </div>
-                                </td>
+                                <?php if ($canManage): ?>
+                                    <td class="whitespace-nowrap px-5 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <a class="text-sm font-medium text-zinc-900 hover:underline" href="<?= url($moduleKey) ?>?edit=<?= (int) $record['id'] ?>#record-form">Edit</a>
+                                            <form method="POST" action="<?= url($moduleKey . '/delete') ?>" onsubmit="return confirm('Delete this record?');">
+                                                <input type="hidden" name="id" value="<?= (int) $record['id'] ?>">
+                                                <button class="text-sm font-medium text-red-600 hover:underline" type="submit">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
                         <?php if (empty($records)): ?>
                             <tr>
-                                <td class="px-5 py-8 text-center text-sm text-zinc-500" colspan="<?= count($module['columns']) + 1 ?>">No records yet. Use the form to add the first one.</td>
+                                <td class="px-5 py-8 text-center text-sm text-zinc-500" colspan="<?= count($module['columns']) + ($canManage ? 1 : 0) ?>">No records yet. <?= $canManage ? 'Use the form to add the first one.' : 'Ask an administrator to add records.' ?></td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -78,6 +86,7 @@
         </div>
 
         <aside class="space-y-6">
+            <?php if ($canManage): ?>
             <div id="record-form" class="rounded-lg border border-zinc-200 bg-white p-5">
                 <h2 class="font-semibold"><?= $editRecord ? 'Edit Record' : 'Add Record' ?></h2>
                 <form method="POST" action="<?= url($moduleKey . '/save') ?>" class="mt-4 space-y-3">
@@ -95,6 +104,12 @@
                     </button>
                 </form>
             </div>
+            <?php else: ?>
+            <div class="rounded-lg border border-zinc-200 bg-white p-5">
+                <h2 class="font-semibold">Read-only Mode</h2>
+                <p class="mt-2 text-sm leading-relaxed text-zinc-500">Your account can view this module, but creating, editing, and deleting records is reserved for authorized staff.</p>
+            </div>
+            <?php endif; ?>
 
             <div class="rounded-lg border border-zinc-200 bg-white p-5">
                 <h2 class="font-semibold">Workflow</h2>

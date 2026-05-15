@@ -64,7 +64,16 @@ Landing/auth:
 - Pricing page
 - Testimonials page
 - Login/logout demo auth
+- Role-aware admin, teacher, and student dashboards
 - Forgot/reset password demo API
+
+Demo accounts:
+
+```text
+admin@lumio.pk / Admin1234!
+teacher@lumio.pk / Teacher123!
+student@lumio.pk / Student123!
+```
 
 Management dashboard:
 
@@ -89,6 +98,9 @@ CRUD:
 - Every management module uses MySQL-backed records through `module_records`.
 - Every module supports create, edit, and delete from the UI.
 - Records are currently stored as JSON in `module_records.data_json`.
+- Admin can manage all modules.
+- Teacher can view teacher-relevant modules and manage attendance, exams, and communications.
+- Student can view student-relevant modules in read-only mode.
 
 API:
 

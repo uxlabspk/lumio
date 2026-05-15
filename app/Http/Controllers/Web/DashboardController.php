@@ -13,11 +13,12 @@ final class DashboardController
     public function index(): void
     {
         AuthMiddleware::requireLogin();
+        $role = $_SESSION['user']['role'] ?? 'admin';
 
         View::render('pages.dashboard', [
             'title' => 'Dashboard',
-            'dashboard' => SchoolManagementData::dashboard(),
-            'navigation' => SchoolManagementData::navigation(),
+            'dashboard' => SchoolManagementData::dashboard($role),
+            'navigation' => SchoolManagementData::navigation($role),
             'modules' => SchoolManagementData::modules(),
             'user' => $_SESSION['user'],
         ], 'layouts/app');

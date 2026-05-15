@@ -6,9 +6,9 @@ namespace App\Services;
 
 final class SchoolManagementData
 {
-    public static function navigation(): array
+    public static function navigation(string $role = 'admin'): array
     {
-        return [
+        $items = [
             ['label' => 'Dashboard', 'path' => 'dashboard', 'icon' => 'layout-dashboard'],
             ['label' => 'Students', 'path' => 'students', 'icon' => 'users'],
             ['label' => 'Admissions', 'path' => 'admissions', 'icon' => 'user-plus'],
@@ -25,11 +25,89 @@ final class SchoolManagementData
             ['label' => 'Reports', 'path' => 'reports', 'icon' => 'bar-chart-3'],
             ['label' => 'Setup', 'path' => 'school-setup', 'icon' => 'settings'],
         ];
+
+        return array_values(array_filter($items, fn (array $item): bool => self::canAccess($role, $item['path'])));
     }
 
-    public static function dashboard(): array
+    public static function dashboard(string $role = 'admin'): array
     {
+        if ($role === 'teacher') {
+            return [
+                'hero' => [
+                    'eyebrow' => 'Teacher workspace',
+                    'title' => 'Teach, mark, and communicate from one place',
+                    'description' => 'Your dashboard focuses on today\'s classes, attendance, homework, exams, and parent communication.',
+                    'actions' => [
+                        ['label' => 'Mark attendance', 'path' => 'attendance', 'primary' => true],
+                        ['label' => 'View timetable', 'path' => 'timetable', 'primary' => false],
+                        ['label' => 'Send class notice', 'path' => 'communications', 'primary' => false],
+                    ],
+                ],
+                'stats' => [
+                    ['label' => 'My Students', 'value' => '148', 'trend' => 'Across 5 assigned classes', 'icon' => 'users'],
+                    ['label' => 'Attendance Pending', 'value' => '2', 'trend' => 'Sections still open', 'icon' => 'calendar-check'],
+                    ['label' => 'Marks Pending', 'value' => '36', 'trend' => 'Monthly test entries', 'icon' => 'clipboard-list'],
+                    ['label' => 'Parent Messages', 'value' => '9', 'trend' => 'Need response today', 'icon' => 'message-square'],
+                ],
+                'today' => [
+                    ['time' => '08:15', 'title' => 'Grade 7-A Mathematics', 'meta' => 'Room B-101'],
+                    ['time' => '09:45', 'title' => 'Grade 8-C Urdu', 'meta' => 'Room B-205'],
+                    ['time' => '11:30', 'title' => 'Submit Grade 5 homework notes', 'meta' => 'Due before lunch'],
+                    ['time' => '01:00', 'title' => 'Parent follow-up window', 'meta' => '3 messages queued'],
+                ],
+                'alerts' => [
+                    ['label' => 'Attendance not submitted', 'value' => 'Grade 8-C and Grade 5-B'],
+                    ['label' => 'Low performance watchlist', 'value' => '6 students need review'],
+                    ['label' => 'Homework missing', 'value' => '14 submissions pending'],
+                ],
+                'feeSeries' => [72, 68, 81, 76, 84, 79, 88],
+            ];
+        }
+
+        if ($role === 'student') {
+            return [
+                'hero' => [
+                    'eyebrow' => 'Student portal',
+                    'title' => 'Your school day at a glance',
+                    'description' => 'Check your timetable, attendance, exams, library books, health notes, and school announcements.',
+                    'actions' => [
+                        ['label' => 'View timetable', 'path' => 'timetable', 'primary' => true],
+                        ['label' => 'Check exams', 'path' => 'exams', 'primary' => false],
+                        ['label' => 'Read notices', 'path' => 'communications', 'primary' => false],
+                    ],
+                ],
+                'stats' => [
+                    ['label' => 'Attendance', 'value' => '96%', 'trend' => 'This term', 'icon' => 'calendar-check'],
+                    ['label' => 'Upcoming Exams', 'value' => '3', 'trend' => 'Next 14 days', 'icon' => 'clipboard-list'],
+                    ['label' => 'Library Books', 'value' => '2', 'trend' => '1 due this week', 'icon' => 'book-open'],
+                    ['label' => 'Notices', 'value' => '5', 'trend' => 'Unread announcements', 'icon' => 'bell'],
+                ],
+                'today' => [
+                    ['time' => '08:15', 'title' => 'Mathematics', 'meta' => 'Room B-101'],
+                    ['time' => '09:00', 'title' => 'English', 'meta' => 'Room A-204'],
+                    ['time' => '10:00', 'title' => 'Science practical', 'meta' => 'Lab 2'],
+                    ['time' => '12:15', 'title' => 'Library return reminder', 'meta' => 'Physics Practical'],
+                ],
+                'alerts' => [
+                    ['label' => 'Exam reminder', 'value' => 'Science test on May 22, 2026'],
+                    ['label' => 'Library due', 'value' => 'One book due this week'],
+                    ['label' => 'Fee status', 'value' => 'May invoice marked paid'],
+                ],
+                'feeSeries' => [80, 84, 79, 88, 91, 86, 92],
+            ];
+        }
+
         return [
+            'hero' => [
+                'eyebrow' => 'Operations overview',
+                'title' => 'Run the school from one place',
+                'description' => 'A practical command center for Pakistani schools: attendance, student records, fees, messages, exams, transport, and compliance gaps are visible without digging.',
+                'actions' => [
+                    ['label' => 'Mark attendance', 'path' => 'attendance', 'primary' => true],
+                    ['label' => 'Record payment', 'path' => 'fees', 'primary' => false],
+                    ['label' => 'Send notice', 'path' => 'communications', 'primary' => false],
+                ],
+            ],
             'stats' => [
                 ['label' => 'Active Students', 'value' => '1,284', 'trend' => '+42 this term', 'icon' => 'users'],
                 ['label' => 'Attendance Today', 'value' => '94.2%', 'trend' => '37 absent', 'icon' => 'calendar-check'],
@@ -49,6 +127,34 @@ final class SchoolManagementData
             ],
             'feeSeries' => [68, 74, 59, 88, 82, 91, 77],
         ];
+    }
+
+    public static function canAccess(string $role, string $path): bool
+    {
+        if ($path === 'dashboard') {
+            return true;
+        }
+
+        $access = [
+            'admin' => ['students', 'admissions', 'attendance', 'classes', 'timetable', 'exams', 'fees', 'communications', 'staff', 'transport', 'library', 'health', 'reports', 'school-setup'],
+            'teacher' => ['students', 'attendance', 'classes', 'timetable', 'exams', 'communications', 'library', 'health', 'reports'],
+            'student' => ['attendance', 'classes', 'timetable', 'exams', 'fees', 'communications', 'library', 'health'],
+        ];
+
+        return in_array($path, $access[$role] ?? [], true);
+    }
+
+    public static function canManage(string $role, string $path): bool
+    {
+        if ($role === 'admin') {
+            return self::canAccess($role, $path);
+        }
+
+        if ($role === 'teacher') {
+            return in_array($path, ['attendance', 'exams', 'communications'], true);
+        }
+
+        return false;
     }
 
     public static function module(string $key): array
